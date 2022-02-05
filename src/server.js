@@ -31,10 +31,19 @@ const sockets = [];
 // but server can't listen to client
 wss.on("connection", (socket) => {
   sockets.push(socket);
+  socket["nickname"] = "Anonymous";
   console.log("Connected to Browser ✅");
   socket.on("close", () => console.log("Disconnected from the Browser ❌"));
-  socket.on("message", (message) => {
-    sockets.forEach((aSocket) => aSocket.send(message.toString()));
+  socket.on("message", (msg) => {
+    const message = JSON.parse(msg);
+    switch (message.type) {
+      case "new_message":
+        return sockets.forEach((aSocket) =>
+          aSocket.send(`${socket.nickname}: ${message.payload.toString()}`)
+        );
+      case "nickname":
+        return (socket["nickname"] = message.payload.toString());
+    }
   });
 });
 
