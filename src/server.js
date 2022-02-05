@@ -24,16 +24,18 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// each user connects to server, save the users in an array
+const sockets = [];
+
 // without connection from server, client can connect to server
 // but server can't listen to client
 wss.on("connection", (socket) => {
+  sockets.push(socket);
   console.log("Connected to Browser ✅");
-
-  socket.send("hello!!!");
-
-  socket.on("message", (message) => console.log(message.toString()));
-
   socket.on("close", () => console.log("Disconnected from the Browser ❌"));
+  socket.on("message", (message) => {
+    sockets.forEach((aSocket) => aSocket.send(message.toString()));
+  });
 });
 
 server.listen(3000, handleListen);
