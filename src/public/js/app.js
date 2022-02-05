@@ -1,3 +1,8 @@
+const socket = io();
+
+/*
+vanila JavaScript / WebSocket implementation
+
 const messageList = document.querySelector("ul");
 const messageForm = document.querySelector("#message");
 const nickForm = document.querySelector("#nick");
@@ -40,3 +45,4 @@ function handleNickSubmit(e) {
 
 messageForm.addEventListener("submit", handleSubmit);
 nickForm.addEventListener("submit", handleNickSubmit);
+*/

@@ -1,5 +1,5 @@
 import http from "http";
-import WebSocket from "ws";
+import SocketIO from "socket.io";
 import express from "express";
 
 const app = express();
@@ -22,8 +22,16 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
   so now http://localhost:3000 will also be able to handle 
   ws://localhost:3000 on the same port */
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const io = SocketIO(server);
 
+io.on("connection", (socket) => {
+  console.log(socket);
+});
+
+/* WebSocket implementation
+
+import WebSocket from "ws";
+const wss = new WebSocket.Server({ server });
 // each user connects to server, save the users in an array
 const sockets = [];
 
@@ -46,5 +54,6 @@ wss.on("connection", (socket) => {
     }
   });
 });
+*/
 
 server.listen(3000, handleListen);
