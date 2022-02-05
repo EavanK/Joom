@@ -33,6 +33,14 @@ io.on("connection", (socket) => {
     done();
     socket.to(roomName).emit("welcome");
   });
+  socket.on("new_message", (msg, roomName, done) => {
+    socket.to(roomName).emit("new_message", msg);
+    done();
+  });
+  // disconnecting means client is going to be disconnected (not hasn't left its rooms yet)
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+  });
 });
 
 /* WebSocket implementation
