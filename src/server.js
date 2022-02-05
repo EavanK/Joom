@@ -25,7 +25,13 @@ const server = http.createServer(app);
 const io = SocketIO(server);
 
 io.on("connection", (socket) => {
-  console.log(socket);
+  socket.onAny((e) => {
+    console.log(`Socket Event: ${e}`);
+  });
+  socket.on("enter_room", (roomName, done) => {
+    socket.join(roomName);
+    done();
+  });
 });
 
 /* WebSocket implementation
