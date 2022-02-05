@@ -5,8 +5,9 @@ Server can trigger the function which client sent.
 */
 const socket = io();
 const welcome = document.getElementById("welcome");
-const form = document.querySelector("form");
 const room = document.getElementById("room");
+const roomForm = welcome.querySelector("#roomName");
+const nameForm = welcome.querySelector("#name");
 
 room.hidden = true;
 
@@ -21,7 +22,7 @@ function addMessage(message) {
 
 function handleMessageSubmit(e) {
   e.preventDefault();
-  const input = room.querySelector("input");
+  const input = room.querySelector("#msg input");
   const value = input.value;
   socket.emit("new_message", input.value, roomName, () => {
     addMessage(`You: ${value}`);
@@ -34,26 +35,36 @@ function showRoom() {
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room - ${roomName}`;
-  const form = room.querySelector("form");
-  form.addEventListener("submit", handleMessageSubmit);
+  const msgForm = room.querySelector("#msg");
+  msgForm.addEventListener("submit", handleMessageSubmit);
 }
 
 function handleRoomSubmit(e) {
   e.preventDefault();
-  const input = form.querySelector("input");
+  const input = welcome.querySelector("#roomName input");
   roomName = input.value;
   socket.emit("enter_room", roomName, showRoom);
   input.value = "";
 }
 
-form.addEventListener("submit", handleRoomSubmit);
+function handleNicknameSubmit(e) {
+  e.preventDefault();
+  const input = welcome.querySelector("#name input");
+  socket.emit("nickname", input.value);
+  const h3 = nameForm.querySelector("h3");
+  h3.innerText = `nickname: ${input.value}`;
+  input.value = "";
+}
 
-socket.on("welcome", () => {
-  addMessage("Someone joined!");
+roomForm.addEventListener("submit", handleRoomSubmit);
+nameForm.addEventListener("submit", handleNicknameSubmit);
+
+socket.on("welcome", (user) => {
+  addMessage(`${user} joined!`);
 });
 
-socket.on("bye", () => {
-  addMessage("Someone left!");
+socket.on("bye", (user) => {
+  addMessage(`${user} left!`);
 });
 
 socket.on("new_message", addMessage);
