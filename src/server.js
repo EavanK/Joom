@@ -23,6 +23,8 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
   so now http://localhost:3000 will also be able to handle 
   ws://localhost:3000 on the same port */
 const httpServer = http.createServer(app);
+
+// @socket.io/admin
 const io = new Server(httpServer, {
   cors: {
     origin: ["https://admin.socket.io"],
