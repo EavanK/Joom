@@ -30,11 +30,15 @@ function handleMessageSubmit(e) {
   input.value = "";
 }
 
-function showRoom() {
+function roomInfo(roomName, newCount) {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room - ${roomName} (${newCount})`;
+}
+
+function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
-  const h3 = room.querySelector("h3");
-  h3.innerText = `Room - ${roomName}`;
+  roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
 }
@@ -59,11 +63,13 @@ function handleNicknameSubmit(e) {
 roomForm.addEventListener("submit", handleRoomSubmit);
 nameForm.addEventListener("submit", handleNicknameSubmit);
 
-socket.on("welcome", (user) => {
+socket.on("welcome", (user, newCount) => {
+  roomInfo(roomName, newCount);
   addMessage(`${user} joined!`);
 });
 
-socket.on("bye", (user) => {
+socket.on("bye", (user, newCount) => {
+  roomInfo(roomName, newCount);
   addMessage(`${user} left!`);
 });
 
