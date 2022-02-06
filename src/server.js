@@ -1,5 +1,6 @@
 import http from "http";
-import WebSocket from "ws";
+import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 
 const app = express();
@@ -21,9 +22,67 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
   then create websocket server on top of the http server 
   so now http://localhost:3000 will also be able to handle 
   ws://localhost:3000 on the same port */
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
 
+instrument(io, {
+  auth: false,
+});
+
+// show all the public rooms
+function publicRooms() {
+  const { sids, rooms } = io.sockets.adapter;
+  const publicRooms = [];
+  rooms.forEach((_, key) => {
+    if (!sids.get(key)) publicRooms.push(key);
+  });
+  return publicRooms;
+}
+
+function countRoom(roomName) {
+  return io.sockets.adapter.rooms.get(roomName)?.size;
+}
+
+io.on("connection", (socket) => {
+  socket["nickname"] = "Anonymous";
+  socket.onAny((e) => {
+    console.log(`Socket Event: ${e}`);
+  });
+  socket.on("enter_room", (roomName, done) => {
+    socket.join(roomName);
+    done(countRoom(roomName));
+    socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
+    io.sockets.emit("room_change", publicRooms());
+  });
+  socket.on("new_message", (msg, roomName, done) => {
+    socket.to(roomName).emit("new_message", `${socket.nickname}: ${msg}`);
+    done();
+  });
+  socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
+
+  // disconnecting means client is going to be disconnected (not hasn't left its rooms yet)
+  socket.on("disconnecting", () => {
+    socket.rooms.forEach((room) =>
+      socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1)
+    );
+  });
+
+  socket.on("disconnect", () => {
+    io.sockets.emit("room_change", publicRooms());
+  });
+});
+
+httpServer.listen(3000, handleListen);
+
+/* WebSocket implementation
+
+import WebSocket from "ws";
+const wss = new WebSocket.Server({ server });
 // each user connects to server, save the users in an array
 const sockets = [];
 
@@ -46,5 +105,4 @@ wss.on("connection", (socket) => {
     }
   });
 });
-
-server.listen(3000, handleListen);
+*/

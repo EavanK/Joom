@@ -10,11 +10,33 @@ html(lang="en")
     header
       h1 Joom
     main 
-      form#nick
-          input(type="text", placeholder="choose a nickname", required)
+      div#welcome
+        h4 Open Rooms:
+        ul
+        form#roomName
+          input( type="text" , placeholder="room name", required)
+          button Enter Room
+        
+        form#name
+          h3
+          input(type="text", placeholder="nickname", required)
           button Save
-      ul
-      form#message
-        input(type="text", placeholder="write a msg", required)
-        button Send
+      div#room
+        h3
+        ul
+        form#msg
+          input(type="text", placeholder="message", required)
+          button Send
+    script(src="/socket.io/socket.io.js")
     script(src="/public/js/app.js")
+
+
+
+
+      //- form#nick
+      //-     input(type="text", placeholder="choose a nickname", required)
+      //-     button Save
+      //- ul
+      //- form#message
+      //-   input(type="text", placeholder="write a msg", required)
+      //-   button Send
