@@ -103,6 +103,7 @@ room.hidden = true;
 stream.hidden = true;
 
 let roomName;
+let count;
 
 function addMessage(message) {
   const ul = room.querySelector("ul");
@@ -137,10 +138,11 @@ async function showRoom(newCount) {
   makeConnection();
 }
 
-function handleRoomSubmit(e) {
+async function handleRoomSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#roomName input");
   roomName = input.value;
+  await showRoom(1);
   socket.emit("enter_room", roomName, showRoom);
   input.value = "";
 }
@@ -158,6 +160,18 @@ roomForm.addEventListener("submit", handleRoomSubmit);
 nameForm.addEventListener("submit", handleNicknameSubmit);
 
 // Socket Code
+/*
+A = Browser A // B = Browser B
+1. A creates RTCPeerConnection
+2. A creates an offer
+3. A saves the offer in A's LocalDescription (setLocalDescription)
+4. A sends the offer to B (through server)
+5. B creates RTCPeerConnection
+6. B receives the offer (from A) save in B's RemoteDescription (setRemoteDescription)
+7. B creates an answer
+8. B saves the answer in B's LocalDescription (setLocalDescription)
+9. B sends the answer to A (through server)
+*/
 
 socket.on("welcome", async (user, newCount) => {
   roomInfo(roomName, newCount);
@@ -165,13 +179,22 @@ socket.on("welcome", async (user, newCount) => {
   // RTC offer (sending invitation)
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
-  // will run peer A
+  // will run peer A (Browser A)
   socket.emit("offer", offer, roomName);
 });
 
-// will run peer B
-socket.on("offer", (offer) => {
-  console.log(offer);
+// will run peer B (Browser B)
+socket.on("offer", async (offer) => {
+  // RTC answer (sending answer)
+  myPeerConnection.setRemoteDescription(offer);
+  const answer = await myPeerConnection.createAnswer();
+  myPeerConnection.setLocalDescription(answer);
+  socket.emit("answer", answer, roomName);
+});
+
+// will run peer A (Browswer A) again
+socket.on("answer", (answer) => {
+  myPeerConnection.setRemoteDescription(answer);
 });
 
 socket.on("bye", (user, newCount) => {
