@@ -14,15 +14,13 @@ async function getCameras() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras = devices.filter((device) => device.kind === "videoinput");
     const currentCamera = myStream.getVideoTracks()[0];
-    if (!document.querySelector("option")) {
-      cameras.forEach((camera) => {
-        const option = document.createElement("option");
-        option.value = camera.deviceId;
-        option.innerText = camera.label;
-        if (currentCamera.label === camera.label) option.selected = true;
-        camerasSelect.appendChild(option);
-      });
-    }
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.innerText = camera.label;
+      if (currentCamera.label === camera.label) option.selected = true;
+      camerasSelect.appendChild(option);
+    });
   } catch (e) {
     console.log(e);
   }
@@ -79,14 +77,22 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
-camerasSelect.addEventListener("click", handleCameraChange);
+camerasSelect.addEventListener("input", handleCameraChange);
 
 //-------------------------------------video/audio connection--------------------------------//
 //--------------------------------------------socket-----------------------------------------//
+
 /* amazing thing on socket.io is that
 socket.io can send function on an event.
 it has to be the last argument.
@@ -131,7 +137,6 @@ async function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
   stream.hidden = false;
-  await getMedia();
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
@@ -142,6 +147,7 @@ async function handleRoomSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#roomName input");
   roomName = input.value;
+  await getMedia();
   await showRoom(1);
   socket.emit("enter_room", roomName, showRoom);
   input.value = "";
@@ -198,7 +204,7 @@ socket.on("offer", async (offer) => {
 
 // will run peer A (Browswer A) again
 socket.on("answer", (answer) => {
-  console.log("received the answer");
+  // console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
 });
 
