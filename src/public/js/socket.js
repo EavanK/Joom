@@ -171,8 +171,9 @@ A = Browser A // B = Browser B
 7. B creates an answer
 8. B saves the answer in B's LocalDescription (setLocalDescription)
 9. B sends the answer to A (through server)
+10. Both A and B send IceCandidate and add IceCandidate (addIceCandidate)
+11. Add peer stream (addstream)
 */
-
 socket.on("welcome", async (user, newCount) => {
   roomInfo(roomName, newCount);
   addMessage(`${user} joined!`);
@@ -180,21 +181,30 @@ socket.on("welcome", async (user, newCount) => {
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
   // will run peer A (Browser A)
+  // console.log("sent the offer");
   socket.emit("offer", offer, roomName);
 });
 
 // will run peer B (Browser B)
 socket.on("offer", async (offer) => {
   // RTC answer (sending answer)
+  // console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  // console.log("sent the answer");
 });
 
 // will run peer A (Browswer A) again
 socket.on("answer", (answer) => {
+  console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  // console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 socket.on("bye", (user, newCount) => {
@@ -220,9 +230,23 @@ socket.on("room_change", (rooms) => {
 // RTC Code
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  // console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  // console.log("Peer's Stream", data.stream);
+  // console.log("My Stream", myStream);
+  const peersFace = document.getElementById("peersFace");
+  peersFace.srcObject = data.stream;
 }
 
 /*
