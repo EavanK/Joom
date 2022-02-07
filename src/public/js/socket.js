@@ -7,6 +7,7 @@ const camerasSelect = document.getElementById("cameras");
 let myStream;
 let muted = false;
 let cameraOff = false;
+let myPeerConnection;
 
 async function getCameras() {
   try {
@@ -125,14 +126,15 @@ function roomInfo(roomName, newCount) {
   h3.innerText = `Room - ${roomName} (${newCount})`;
 }
 
-function showRoom(newCount) {
+async function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
   stream.hidden = false;
-  getMedia();
+  await getMedia();
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
+  makeConnection();
 }
 
 function handleRoomSubmit(e) {
@@ -155,9 +157,21 @@ function handleNicknameSubmit(e) {
 roomForm.addEventListener("submit", handleRoomSubmit);
 nameForm.addEventListener("submit", handleNicknameSubmit);
 
-socket.on("welcome", (user, newCount) => {
+// Socket Code
+
+socket.on("welcome", async (user, newCount) => {
   roomInfo(roomName, newCount);
   addMessage(`${user} joined!`);
+  // RTC offer (sending invitation)
+  const offer = await myPeerConnection.createOffer();
+  myPeerConnection.setLocalDescription(offer);
+  // will run peer A
+  socket.emit("offer", offer, roomName);
+});
+
+// will run peer B
+socket.on("offer", (offer) => {
+  console.log(offer);
 });
 
 socket.on("bye", (user, newCount) => {
@@ -179,6 +193,14 @@ socket.on("room_change", (rooms) => {
     roomList.append(li);
   });
 });
+
+// RTC Code
+function makeConnection() {
+  myPeerConnection = new RTCPeerConnection();
+  myStream
+    .getTracks()
+    .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
 
 /*
 vanila JavaScript / WebSocket implementation

@@ -77,6 +77,11 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     io.sockets.emit("room_change", publicRooms());
   });
+
+  // webRTC
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
+  });
 });
 
 httpServer.listen(3000, handleListen);
