@@ -7,6 +7,7 @@ const camerasSelect = document.getElementById("cameras");
 let myStream;
 let muted = false;
 let cameraOff = false;
+let myPeerConnection;
 
 async function getCameras() {
   try {
@@ -102,6 +103,7 @@ room.hidden = true;
 stream.hidden = true;
 
 let roomName;
+let count;
 
 function addMessage(message) {
   const ul = room.querySelector("ul");
@@ -125,20 +127,22 @@ function roomInfo(roomName, newCount) {
   h3.innerText = `Room - ${roomName} (${newCount})`;
 }
 
-function showRoom(newCount) {
+async function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
   stream.hidden = false;
-  getMedia();
+  await getMedia();
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
+  makeConnection();
 }
 
-function handleRoomSubmit(e) {
+async function handleRoomSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#roomName input");
   roomName = input.value;
+  await showRoom(1);
   socket.emit("enter_room", roomName, showRoom);
   input.value = "";
 }
@@ -155,9 +159,42 @@ function handleNicknameSubmit(e) {
 roomForm.addEventListener("submit", handleRoomSubmit);
 nameForm.addEventListener("submit", handleNicknameSubmit);
 
-socket.on("welcome", (user, newCount) => {
+// Socket Code
+/*
+A = Browser A // B = Browser B
+1. A creates RTCPeerConnection
+2. A creates an offer
+3. A saves the offer in A's LocalDescription (setLocalDescription)
+4. A sends the offer to B (through server)
+5. B creates RTCPeerConnection
+6. B receives the offer (from A) save in B's RemoteDescription (setRemoteDescription)
+7. B creates an answer
+8. B saves the answer in B's LocalDescription (setLocalDescription)
+9. B sends the answer to A (through server)
+*/
+
+socket.on("welcome", async (user, newCount) => {
   roomInfo(roomName, newCount);
   addMessage(`${user} joined!`);
+  // RTC offer (sending invitation)
+  const offer = await myPeerConnection.createOffer();
+  myPeerConnection.setLocalDescription(offer);
+  // will run peer A (Browser A)
+  socket.emit("offer", offer, roomName);
+});
+
+// will run peer B (Browser B)
+socket.on("offer", async (offer) => {
+  // RTC answer (sending answer)
+  myPeerConnection.setRemoteDescription(offer);
+  const answer = await myPeerConnection.createAnswer();
+  myPeerConnection.setLocalDescription(answer);
+  socket.emit("answer", answer, roomName);
+});
+
+// will run peer A (Browswer A) again
+socket.on("answer", (answer) => {
+  myPeerConnection.setRemoteDescription(answer);
 });
 
 socket.on("bye", (user, newCount) => {
@@ -179,6 +216,14 @@ socket.on("room_change", (rooms) => {
     roomList.append(li);
   });
 });
+
+// RTC Code
+function makeConnection() {
+  myPeerConnection = new RTCPeerConnection();
+  myStream
+    .getTracks()
+    .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
 
 /*
 vanila JavaScript / WebSocket implementation
