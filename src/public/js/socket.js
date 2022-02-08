@@ -14,15 +14,13 @@ async function getCameras() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras = devices.filter((device) => device.kind === "videoinput");
     const currentCamera = myStream.getVideoTracks()[0];
-    if (!document.querySelector("option")) {
-      cameras.forEach((camera) => {
-        const option = document.createElement("option");
-        option.value = camera.deviceId;
-        option.innerText = camera.label;
-        if (currentCamera.label === camera.label) option.selected = true;
-        camerasSelect.appendChild(option);
-      });
-    }
+    cameras.forEach((camera) => {
+      const option = document.createElement("option");
+      option.value = camera.deviceId;
+      option.innerText = camera.label;
+      if (currentCamera.label === camera.label) option.selected = true;
+      camerasSelect.appendChild(option);
+    });
   } catch (e) {
     console.log(e);
   }
@@ -79,14 +77,22 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
+  if (myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
-camerasSelect.addEventListener("click", handleCameraChange);
+camerasSelect.addEventListener("input", handleCameraChange);
 
 //-------------------------------------video/audio connection--------------------------------//
 //--------------------------------------------socket-----------------------------------------//
+
 /* amazing thing on socket.io is that
 socket.io can send function on an event.
 it has to be the last argument.
@@ -131,7 +137,6 @@ async function showRoom(newCount) {
   welcome.hidden = true;
   room.hidden = false;
   stream.hidden = false;
-  await getMedia();
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
@@ -142,6 +147,7 @@ async function handleRoomSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#roomName input");
   roomName = input.value;
+  await getMedia();
   await showRoom(1);
   socket.emit("enter_room", roomName, showRoom);
   input.value = "";
@@ -171,8 +177,9 @@ A = Browser A // B = Browser B
 7. B creates an answer
 8. B saves the answer in B's LocalDescription (setLocalDescription)
 9. B sends the answer to A (through server)
+10. Both A and B send IceCandidate and add IceCandidate (addIceCandidate)
+11. Add peer stream (addstream)
 */
-
 socket.on("welcome", async (user, newCount) => {
   roomInfo(roomName, newCount);
   addMessage(`${user} joined!`);
@@ -180,21 +187,30 @@ socket.on("welcome", async (user, newCount) => {
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
   // will run peer A (Browser A)
+  // console.log("sent the offer");
   socket.emit("offer", offer, roomName);
 });
 
 // will run peer B (Browser B)
 socket.on("offer", async (offer) => {
   // RTC answer (sending answer)
+  // console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  // console.log("sent the answer");
 });
 
 // will run peer A (Browswer A) again
 socket.on("answer", (answer) => {
+  // console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on("ice", (ice) => {
+  // console.log("received candidate");
+  myPeerConnection.addIceCandidate(ice);
 });
 
 socket.on("bye", (user, newCount) => {
@@ -220,9 +236,23 @@ socket.on("room_change", (rooms) => {
 // RTC Code
 function makeConnection() {
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("addstream", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  // console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  // console.log("Peer's Stream", data.stream);
+  // console.log("My Stream", myStream);
+  const peersFace = document.getElementById("peersFace");
+  peersFace.srcObject = data.stream;
 }
 
 /*
