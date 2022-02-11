@@ -1,0 +1,119 @@
+.room {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.msg {
+  width: 50%;
+  height: 200px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #434652;
+  border-radius: 10px;
+  padding-left: 20px;
+}
+
+form#msg {
+  display: flex;
+  justify-self: center;
+  align-self: center;
+  margin-top: 5px;
+  width: 45%;
+}
+
+form#msg > input,
+form#msg > button {
+  height: 6vh;
+}
+
+#myStream {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  padding: 0 30px;
+}
+.video {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+.myVideo,
+.peerVideo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 600px;
+  height: 550px;
+  border: 1px solid black;
+  padding: 40px 10px;
+  border-radius: 5px;
+}
+#myFace,
+#peersFace {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+}
+.option {
+  display: flex;
+  justify-content: start;
+  width: 80%;
+  height: 40px;
+  margin-bottom: 20px;
+}
+.option > button {
+  height: 40px;
+  min-width: 60px;
+  width: 60px;
+  margin-right: 20px;
+}
+i {
+  font-size: 15px;
+}
+
+@media screen and (max-width: 1024px) {
+  .msg {
+    width: 80%;
+  }
+  form#msg {
+    width: 80%;
+  }
+  .option {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 820px) {
+  .myVideo,
+  .peerVideo {
+    width: 100%;
+    height: auto;
+    padding: 0, 10px;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .video {
+    flex-direction: column;
+    align-items: center;
+  }
+  .myVideo,
+  .peerVideo {
+    padding: 10px;
+  }
+  .option {
+    width: 100%;
+    justify-content: center;
+    padding: 0;
+  }
+  select {
+    width: 30%;
+  }
+}

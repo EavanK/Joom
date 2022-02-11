@@ -1,13 +1,17 @@
 // video & call
 const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
+const unmuteBtn = document.getElementById("unmute");
 const cameraBtn = document.getElementById("camera");
+const cameraOffBtn = document.getElementById("cameraOff");
 const camerasSelect = document.getElementById("cameras");
 
 let myStream;
 let muted = false;
 let cameraOff = false;
 let myPeerConnection;
+unmuteBtn.hidden = true;
+cameraOffBtn.hidden = true;
 
 async function getCameras() {
   try {
@@ -53,10 +57,12 @@ function handleMuteClick() {
     .forEach((track) => (track.enabled = !track.enabled));
 
   if (!muted) {
-    muteBtn.innerText = "Unmute";
+    unmuteBtn.hidden = false;
+    muteBtn.hidden = true;
     muted = true;
   } else {
-    muteBtn.innerText = "Mute";
+    unmuteBtn.hidden = true;
+    muteBtn.hidden = false;
     muted = false;
   }
 }
@@ -67,10 +73,12 @@ function handleCameraClick() {
     .forEach((track) => (track.enabled = !track.enabled));
 
   if (cameraOff) {
-    cameraBtn.innerText = "Turn Camera Off";
+    cameraOffBtn.hidden = true;
+    cameraBtn.hidden = false;
     cameraOff = false;
   } else {
-    cameraBtn.innerText = "Turn Camera On";
+    cameraOffBtn.hidden = false;
+    cameraBtn.hidden = true;
     cameraOff = true;
   }
 }
@@ -87,7 +95,9 @@ async function handleCameraChange() {
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
+unmuteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
+cameraOffBtn.addEventListener("click", handleCameraClick);
 camerasSelect.addEventListener("input", handleCameraChange);
 
 //-------------------------------------video/audio connection--------------------------------//
@@ -99,11 +109,13 @@ it has to be the last argument.
 Server can trigger the function which client sent.
 */
 const socket = io();
+const home = document.getElementById("home");
 const welcome = document.getElementById("welcome");
 const room = document.getElementById("room");
 const roomForm = welcome.querySelector("#roomName");
 const nameForm = welcome.querySelector("#name");
 const stream = document.getElementById("myStream");
+const info = document.getElementById("info");
 
 room.hidden = true;
 stream.hidden = true;
@@ -134,9 +146,10 @@ function roomInfo(roomName, newCount) {
 }
 
 async function showRoom(newCount) {
-  welcome.hidden = true;
+  home.hidden = true;
   room.hidden = false;
   stream.hidden = false;
+
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
@@ -157,8 +170,8 @@ function handleNicknameSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#name input");
   socket.emit("nickname", input.value);
-  const h3 = nameForm.querySelector("h3");
-  h3.innerText = `nickname: ${input.value}`;
+  const h3 = info.querySelector("h3");
+  h3.innerText = `Nickname: ${input.value}`;
   input.value = "";
 }
 
