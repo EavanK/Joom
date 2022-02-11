@@ -99,11 +99,13 @@ it has to be the last argument.
 Server can trigger the function which client sent.
 */
 const socket = io();
+const home = document.getElementById("home");
 const welcome = document.getElementById("welcome");
 const room = document.getElementById("room");
 const roomForm = welcome.querySelector("#roomName");
 const nameForm = welcome.querySelector("#name");
 const stream = document.getElementById("myStream");
+const info = document.getElementById("info");
 
 room.hidden = true;
 stream.hidden = true;
@@ -134,7 +136,7 @@ function roomInfo(roomName, newCount) {
 }
 
 async function showRoom(newCount) {
-  welcome.hidden = true;
+  home.hidden = true;
   room.hidden = false;
   stream.hidden = false;
   roomInfo(roomName, newCount);
@@ -157,8 +159,8 @@ function handleNicknameSubmit(e) {
   e.preventDefault();
   const input = welcome.querySelector("#name input");
   socket.emit("nickname", input.value);
-  const h3 = nameForm.querySelector("h3");
-  h3.innerText = `nickname: ${input.value}`;
+  const h3 = info.querySelector("h3");
+  h3.innerText = `Nickname: ${input.value}`;
   input.value = "";
 }
 

@@ -4,23 +4,37 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400&display=swap" rel="stylesheet")
+    link(rel="stylesheet", href="public/styles/home.css")
+    //- link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     title Joom
-    link(rel="stylesheet", href="https://unpkg.com/mvp.css")
   body 
     header
       h1 Joom
     main 
-      div#welcome
-        h4 Open Rooms:
-        ul
-        form#roomName
-          input( type="text" , placeholder="room name", required)
-          button Enter Room
-        
-        form#name
-          h3
-          input(type="text", placeholder="nickname", required)
-          button Save
+      div#home
+        div.home
+          div.left
+            div#welcome
+              div#list
+                h4 Open Rooms:
+                ul
+              div#info
+                h3 Nickname: Annonymous
+                div.room
+                  form#roomName
+                    label Room
+                    input( type="text" , placeholder="room name", required)
+                    button Enter Room
+                div.nickname
+                  form#name
+                    label Nickname
+                    input(type="text", placeholder="nickname", required)
+                    button Save
+          div.right
+            img#img(src="https://www.payetteforward.com/wp-content/uploads/2019/05/what-is-video-calling.jpg")
       div#room
         h3
         ul
