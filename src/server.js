@@ -1,9 +1,11 @@
+require("dotenv").config();
 import http from "http";
 import { Server } from "socket.io";
 import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.set("view engine", "pug");
 app.set("views", __dirname + "/views");
@@ -90,7 +92,7 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3000, handleListen);
+httpServer.listen(PORT, handleListen);
 
 /* WebSocket implementation
 
