@@ -135,11 +135,11 @@ button:hover {
 #img {
   width: 90%;
   height: 300px;
-  border-radius: 20px;
+  border-radius: 10px;
 }
 
 @media screen and (max-width: 1024px) {
-  #home {
+  .home {
     flex-direction: column;
     align-items: center;
   }
@@ -162,9 +162,6 @@ button:hover {
 }
 
 @media screen and (max-width: 550px) {
-  main {
-    height: 80vh;
-  }
   #welcome {
     flex-direction: column;
   }

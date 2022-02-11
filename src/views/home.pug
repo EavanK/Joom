@@ -7,7 +7,11 @@ html(lang="en")
     link(rel="preconnect" href="https://fonts.googleapis.com")
     link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
     link(href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400&display=swap" rel="stylesheet")
-    link(rel="stylesheet", href="public/styles/home.css")
+    link(rel="stylesheet" type="text/css" href="public/styles/room.css")
+    link(rel="stylesheet" type="text/css" href="public/styles/home.css")
+    script(src="https://kit.fontawesome.com/09ab167d1c.js" crossorigin="anonymous")
+    
+
     //- link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     title Joom
   body 
@@ -36,18 +40,30 @@ html(lang="en")
           div.right
             img#img(src="https://www.payetteforward.com/wp-content/uploads/2019/05/what-is-video-calling.jpg")
       div#room
-        h3
-        ul
-        form#msg
-          input(type="text", placeholder="message", required)
-          button Send
+        div.room
+          h3
+          div.msg
+            ul
+          form#msg
+            input(type="text", placeholder="message", required)
+            button Send
 
-        div#myStream
-          video#myFace(autoplay, playsinline, width="400", height="400")
-          button#mute Mute
-          button#camera Turn Camera Off
-          select#cameras
-          video#peersFace(autoplay, playsinline, width="400", height="400")
+          div#myStream
+            div.option
+              button#mute
+                i.fa-solid.fa-volume-high
+              button#unmute
+                i.fa-solid.fa-volume-xmark
+              button#camera
+                i.fa-solid.fa-video
+              button#cameraOff
+                i.fa-solid.fa-video-slash
+              select#cameras
+            div.video
+              div.myVideo
+                video#myFace(autoplay, playsinline)
+              div.peerVideo
+                video#peersFace(autoplay, playsinline)
     script(src="/socket.io/socket.io.js")
     script(src="/public/js/socket.js")
 

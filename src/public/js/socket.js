@@ -1,13 +1,17 @@
 // video & call
 const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
+const unmuteBtn = document.getElementById("unmute");
 const cameraBtn = document.getElementById("camera");
+const cameraOffBtn = document.getElementById("cameraOff");
 const camerasSelect = document.getElementById("cameras");
 
 let myStream;
 let muted = false;
 let cameraOff = false;
 let myPeerConnection;
+unmuteBtn.hidden = true;
+cameraOffBtn.hidden = true;
 
 async function getCameras() {
   try {
@@ -53,10 +57,12 @@ function handleMuteClick() {
     .forEach((track) => (track.enabled = !track.enabled));
 
   if (!muted) {
-    muteBtn.innerText = "Unmute";
+    unmuteBtn.hidden = false;
+    muteBtn.hidden = true;
     muted = true;
   } else {
-    muteBtn.innerText = "Mute";
+    unmuteBtn.hidden = true;
+    muteBtn.hidden = false;
     muted = false;
   }
 }
@@ -67,10 +73,12 @@ function handleCameraClick() {
     .forEach((track) => (track.enabled = !track.enabled));
 
   if (cameraOff) {
-    cameraBtn.innerText = "Turn Camera Off";
+    cameraOffBtn.hidden = true;
+    cameraBtn.hidden = false;
     cameraOff = false;
   } else {
-    cameraBtn.innerText = "Turn Camera On";
+    cameraOffBtn.hidden = false;
+    cameraBtn.hidden = true;
     cameraOff = true;
   }
 }
@@ -87,7 +95,9 @@ async function handleCameraChange() {
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
+unmuteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
+cameraOffBtn.addEventListener("click", handleCameraClick);
 camerasSelect.addEventListener("input", handleCameraChange);
 
 //-------------------------------------video/audio connection--------------------------------//
@@ -139,6 +149,7 @@ async function showRoom(newCount) {
   home.hidden = true;
   room.hidden = false;
   stream.hidden = false;
+
   roomInfo(roomName, newCount);
   const msgForm = room.querySelector("#msg");
   msgForm.addEventListener("submit", handleMessageSubmit);
