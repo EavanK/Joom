@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Joom Clone using NodeJS, WebRTC and Websockets.",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon"
